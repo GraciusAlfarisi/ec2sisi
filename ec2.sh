@@ -1,5 +1,10 @@
 #!/bin/bash
 
+### AWS CLI AUTOMATION
+## Written by: Michael Jarnling
+# School project to automate some AWS tasks
+
+## EARLY NOTES
 # bring in arguments like createkeys, 
 #+ list, start, stop, run, terminate,
 #+ allocate-elastic, assoc-elastic, disassoc-elastic, release-elastic
@@ -7,16 +12,19 @@
 #+ create-igw, attach-igw, detach-igw, delete-igw
 
 function createKeys () {
+	# param: name
 	echo "Creating keys..."
 	# aws ec2 create-key-pair --key-name <name>
 }
 
 function listInstances () {
+	# param: none
 	echo "Listing instances..."
 	# aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query "Reservations[].Instances[].InstanceId"
 }
 
 function runInstance () {
+	# param: image id, type, key name, subnet id, sec group id
 	echo "Creating instance..."
 	# aws ec2 run-instances --image-id <image-id> --count <1-9> --instance-type <type> --key-name <keyname> --subnet-id <subnet-id> --security-group-ids <security-group-id>
 	# ex:
@@ -24,41 +32,49 @@ function runInstance () {
 }
 
 function startInstance () {
+	# param: instance id
 	echo "Starting instance..."
 	# aws ec2 start-instances --instance-ids <instance-ids>
 }
 
 function stopInstance () {
+	# param: instance id
 	echo "Stopping instance..."
 	# aws ec2 stop-instances --instance-ids <instance-ids>
 }
 
 function terminateInstance () {
+	# param: instance id
 	echo "Terminating instance..."
 	# aws ec2 terminate-instances --instance-ids <instance-ids>
 }
 
 function allocateElastic () {
+	# param: none
 	echo "Allocating Elastic IP..."
 	# aws ec2 allocate-address 
 }
 
 function associateElastic () {
+	# param: allocation id, instance id
 	echo "Associating Elastic IP with..."
 	# aws ec2 associate-address --allocation-id <allocation-id> --instance-id <instance-id>
 }
 
 function disassociateElastic () {
+	# param: association id
 	echo "Disassociating Elastic IP from..."
 	# aws ec2 disassociate-address --association-id <association-id>
 }
 
 function releaseElastic () {
+	# param: allocation id
 	echo "Releasing Elastic IP..."
 	# aws ec2 release-address --allocation-id <allocation-id>
 }
 
 function createVPC () {
+	# param: cidr block
 	echo "Creating VPC..."
 	# aws ec2 create-vpc --cidr-block <cidr block> --
 	# ex:
@@ -66,11 +82,13 @@ function createVPC () {
 }
 
 function describeVPC () {
+	# param: vpc id
 	echo "Describing VPC..."
 	# aws ec2 describe-vpcs --vpc-id <vpc-id>
 }
 
 function createSubnet () {
+	# param: vpc id, cidr block, az name
 	echo "Creating subnet..."
 	# aws ec2 create-subnet --vpc-id <vpc-id> --cidr-block <cidr-block> --availability-zone <az-name>
 	# ex:
@@ -86,27 +104,32 @@ function attachRoute () {
 }
 
 function createIGW () {
+	# param: none
 	echo "Creating Internet Gateway..."
 	# aws ec2 create-internet-gateway
 }
 
 function attachIGW () {
+	# param: igw id, vpc id
 	echo "Attaching Internet Gateway..."
 	# aws ec2 attach-internet-gateway --internet-gateway-id <igw-id> --vpc-id <vpc-id>
 }
 
 function describeIGW () {
+	# param: [vpc id, igw id]
 	echo "Describing Internet Gateway..."
 	# aws ec2 describe-internet-gateway [--filters <value>]
 	# possibly usable filters: attachment.vpc-id (if attached to VPC), internet-gateway-id <igw-id>
 }
 
 function detachIGW () {
+	# param: igw id, vpc id
 	echo "Detaching Internet Gateway..."
 	# aws ec2 detach-internet-gateway --internet-gateway-id <igw-id> --vpc-id <vpc-id>
 }
 
 function deleteIGW () {
+	# param: igw id
 	echo "Deleting Internet Gateway..."
 	# aws ec2 delete-internet-gateway --internet-gateway-id <igw-id>
 }
