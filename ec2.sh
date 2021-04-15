@@ -95,8 +95,16 @@ function createSubnet () {
 	# aws ec2 create-subnet --vpc-id aea3a43eajhja --cidr-block 10.0.1.0/24 --availability-zone us-east-1d
 }
 
+function createRouteTable () {
+	# param: vpc id
+	echo "Creating route table..."
+	# aws ec2 create-route-table --vpc-id <vpc-id>
+}
+
 function createRoute () {
+	# param: vpc id, igw id, route table id
 	echo "Creating route..."
+	# aws ec2 create-route --route-table-id <route table id> --gateway-id <igw-id> --vpc-id <vpc-id>
 }
 
 function attachRoute () {
