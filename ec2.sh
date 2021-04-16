@@ -144,6 +144,12 @@ function deleteIGW () {
 	# aws ec2 delete-internet-gateway --internet-gateway-id <igw-id>
 }
 
+function connectSSH () {
+	# param: key name, ip
+	echo "Connecting to server via ssh..."
+	# ssh -i <key> ubuntu@ip 
+}
+
 function showhelp () {
 	echo "Listing help info..."
 	printf "networking:\n\tcreate-vpc,\n\tcreate-igw,\n\tattach-igw,\n\tcreate-route,\n\tattach-route,\n\tcreate-subnet,\n\tallocate-elastic,\n\tassociate-elastic,\n\t(more to come)\n"
@@ -191,10 +197,12 @@ if [[ -n "$1" ]]; then
 			startInstance;;
 		"stop-instance")
 			stopInstance;;
+		"ssh-connect")
+			connectSSH;;
 		"help")
 			showhelp;;
 		*)
-			echo "Invalid parameter, see --help for more information.";;
+			echo "Invalid parameter, see help for more information.";;
 	esac
 fi
 
