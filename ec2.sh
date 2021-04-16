@@ -104,7 +104,7 @@ function createRouteTable () {
 function createRoute () {
 	# param: vpc id, igw id, route table id
 	echo "Creating route..."
-	# aws ec2 create-route --route-table-id <route table id> --gateway-id <igw-id> --vpc-id <vpc-id>
+	# aws ec2 create-route --route-table-id <route table id> --gateway-id <igw-id> --vpc-id <vpc-id> --destination-cidr-block <0.0.0.0/0>
 }
 
 function associateRoute () {
