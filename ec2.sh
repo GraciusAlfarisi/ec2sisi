@@ -32,6 +32,12 @@ function runInstance () {
 	# ubuntu 20 LTS x64 - ami-042e8287309f5df03
 }
 
+function getImage () {
+	echo "Fetching image id..."
+	# aws ec2 describe-images --owner 099720109477 --query 'Images[*].[ImageId]' --output text --filters "Name=architecture,Values=x86_64" "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223"
+	# returns: ami-042e8287309f5df03
+}
+
 function startInstance () {
 	# param: instance id
 	echo "Starting instance..."
