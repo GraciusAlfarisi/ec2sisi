@@ -107,8 +107,10 @@ function createRoute () {
 	# aws ec2 create-route --route-table-id <route table id> --gateway-id <igw-id> --vpc-id <vpc-id>
 }
 
-function attachRoute () {
-	echo "Attaching route..."
+function associateRoute () {
+	# params: route table id, [subnet id, igw id]
+	echo "Associating route with subnet and or internet gateway..."
+	# aws ec2 associate-route-table --route-table-id <route-table-id> [--subnet-id <subnet-id>] [--gateway-id <igw-id>]
 }
 
 function createIGW () {
