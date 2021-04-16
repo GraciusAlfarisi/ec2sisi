@@ -29,6 +29,7 @@ function runInstance () {
 	# aws ec2 run-instances --image-id <image-id> --count <1-9> --instance-type <type> --key-name <keyname> --subnet-id <subnet-id> --security-group-ids <security-group-id>
 	# ex:
 	# aws ec2 run-instances --image-id ami-0742b4e673072066f --count 1 --instance-type t2.micro --key-name michaelschool --subnet-id subnet-9c0e78bd --security-group-ids sg-04e83d3d8a323078d
+	# ubuntu 20 LTS x64 - ami-042e8287309f5df03
 }
 
 function startInstance () {
