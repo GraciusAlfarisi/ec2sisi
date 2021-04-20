@@ -21,7 +21,9 @@
 
 function createKeys () {
 	# param: name
+	keyname="$1"
 	echo "Creating keys..."
+	aws ec2 create-key-pair --key-name "$keyname"
 	# aws ec2 create-key-pair --key-name <name>
 }
 
@@ -106,6 +108,66 @@ function associateRoute () {
 	# aws ec2 associate-route-table --route-table-id <route-table-id> [--subnet-id <subnet-id>] [--gateway-id <igw-id>]
 }
 
+function getImage () {
+	echo "Fetching image id..."
+	imageid=$(aws ec2 describe-images --owner 099720109477 --query 'Images[*].[ImageId]' --output text --filters "Name=architecture,Values=x86_64" "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223")
+	echo "- Image ID for Ubuntu 20.04: $imageid"
+	# aws ec2 describe-images --owner 099720109477 --query 'Images[*].[ImageId]' --output text --filters "Name=architecture,Values=x86_64" "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223"
+	# returns: ami-042e8287309f5df03
+}
+
+function createSG () {
+	echo "Creating security groups..:"
+	# public
+	local raw=$(aws ec2 create-security-group --group-name "Public SG" --description "SG for the public instances" --output text)
+	pubsg=$(echo $raw | awk '{print $1}')
+	echo "- Public Security Group: $pubsg"
+	# private
+	local raw=$(aws ec2 create-security-group --group-name "Private SG" --description "SG for the private instances" --output text)
+	privsg=$(echo $raw | awk '{print $1}')
+	echo "- Private Security Group: $privsg"
+}
+
+function createRules () {
+	echo "Modifying security group rules..."
+	# public allow ingress port 80
+	aws ec2 authorize-security-group-ingress --group-id "$pubsg" --protocol tcp --port 80 --cidr "0.0.0.0/0"
+}
+
+function runInstance () {
+	# param: image id, type, key name, subnet id, sec group id
+	echo "Creating instance..."
+	# public
+	local raw=$(aws ec2 run-instances --image-id "$imageid" --count 1 --instance-type "t2.micro" --key-name "$keyname" --subnet-id "$pubsub" --security-group-ids "$pubsg" --output text --query "Instances[].InstanceId")
+	pubinstance=$(echo "$raw")
+	# private
+	local raw=$(aws ec2 run-instances --image-id "$imageid" --count 1 --instance-type "t2.micro" --key-name "$keyname" --subnet-id "$privsub" --security-group-ids "$privsg" --output text --query "Instances[].InstanceId")
+	privinstance=$(echo "$raw")
+	# aws ec2 run-instances --image-id <image-id> --count <1-9> --instance-type <type> --key-name <keyname> --subnet-id <subnet-id> --security-group-ids <security-group-id>
+	# ex:
+	# aws ec2 run-instances --image-id ami-0742b4e673072066f --count 1 --instance-type t2.micro --key-name michaelschool --subnet-id subnet-9c0e78bd --security-group-ids sg-04e83d3d8a323078d
+	# ubuntu 20 LTS x64 - ami-042e8287309f5df03
+}
+
+function allocateElastic () {
+	# param: none
+	echo "Allocating Elastic IP..."
+	local raw=$(aws ec2 allocate-address --domain vpc --network-border-group us-east-1 --output text)
+	allocationid=$(echo "$raw" | awk '{print $1}')
+	elasticip=$(echo "$raw" | awk '{print $4}')
+	echo "- Elastic IP: $elasticip allocated with id: $allocationid"
+	# aws ec2 allocate-address --domain vpc --network-border-group us-east-1 --output text
+	# ex output: eipalloc-0d47df0404e8cc30d      vpc     us-east-1       54.237.44.241   amazon
+}
+
+function associateElastic () {
+	# param: allocation id, instance id
+	echo "Associating Elastic IP with public instance..."
+	local raw=$(aws ec2 associate-address --alocation-id "$allocationid" --instance-id "$pubinstance")
+	echo "Instance: $pubinstance associated with Elastic IP $elasticip"
+	# aws ec2 associate-address --allocation-id <allocation-id> --instance-id <instance-id>
+}
+
 ### EXECUTE
 
 ## Create VPC
@@ -129,21 +191,24 @@ associateRoute "$routetable" "$pubsub"
 
 ## Instances
 # Keys
+createKeys "cr8Uf5uEmL"
 
 # Get Ubuntu Image
+getImage
 
-# Create security group
+# Create security groups and apply rules
+createSG
+createRules
 
-# Run public instance
-
-# Run private instance
+# Run instances
+runInstance
 
 ## Elastic IP
 # Allocate Elastic IP
+allocateElastic
 
 # Associate Elastic IP
-
+associateElastic
 
 ### DONE
-
 
