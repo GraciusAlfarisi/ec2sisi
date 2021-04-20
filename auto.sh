@@ -10,10 +10,11 @@
 # . Create public route table for VPC
 # . Associate route with public subnet
 ## Instances
-# . Create a specific security group for ssh and http (use default for the internal server)
+# . Create a specific security group for ssh and http (public server)
+# . Create a separate security group for internal traffic (private server)
 # . Get Ubuntu Image
-# . Run IT instance with new security group above
-# . Run Finance instance with default security group
+# . Run IT instance with public security group above
+# . Run Finance instance with private security group
 ## Elastic IP
 # . Allocate Elastic IP
 # . Associate Elastic IP with IT instance
