@@ -1,23 +1,24 @@
 #!/bin/bash
 
-## General
-# . Create SSH keys
 ## Networking
 # . Create VPC
 # . Create two subnets
 # . Create IGW
 # . Attach IGW to VPC
-# . Create public route table for VPC
-# . Associate route with public subnet
+# . Create public route table, attached to VPC
+# . Create route
+# . Associate route table with both subnets
 ## Instances
-# . Create a specific security group for ssh and http (public server)
-# . Create a separate security group for internal traffic (private server)
-# . Get Ubuntu Image
-# . Run IT instance with public security group above
-# . Run Finance instance with private security group
+# . Create SSH keys
+# . Get Ubuntu image id
+# . Create a specific security group for public instance (ingress port 80 tcp)
+# . Create a locked down security group for private instance
+# . Run IT instance with new first group above
+# . Run Finance instance with second security group
 ## Elastic IP
 # . Allocate Elastic IP
 # . Associate Elastic IP with IT instance
+## DONE
 
 function createKeys () {
 	# param: name
