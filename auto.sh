@@ -25,7 +25,7 @@ function createKeys () {
 	echo "Creating keys..."
 	local raw=$(aws ec2 create-key-pair --key-name "$keyname" --output text --query KeyMaterial)
 	echo "$raw" > "$keyname".pem
-	echo "Key created: ${keyname}.pem"
+	echo "- Key created: ${keyname}.pem"
 	# aws ec2 create-key-pair --key-name <name>
 }
 
@@ -107,7 +107,7 @@ function associateRoute () {
 	local raw=$(aws ec2 associate-route-table --route-table-id "$rtid" --subnet-id "$pubsub" --output text)
 	assocrouteid=$(echo "$raw" | awk '{print $2}')
 	echo "- Route Table $rtid associated with Subnet $pubsub"
-	local raw=$(aws ec2 associate-route-table --route-table id "$rtid" --subnet-id "$privsub" --output text)
+	local raw=$(aws ec2 associate-route-table --route-table-id "$rtid" --subnet-id "$privsub" --output text)
 	assocrouteid2=$(echo "$raw" | awk '{print $2}')
 	echo "- Route Table $rtid associated with Subnet $privsub"
 	# aws ec2 associate-route-table --route-table-id <route-table-id> [--subnet-id <subnet-id>] [--gateway-id <igw-id>]
@@ -137,6 +137,7 @@ function createRules () {
 	echo "Modifying security group rules..."
 	# public allow ingress port 80
 	aws ec2 authorize-security-group-ingress --group-id "$pubsg" --protocol tcp --port 80 --cidr "0.0.0.0/0"
+	echo "- Added ingress allow port 80 on $pubsg"
 }
 
 function runInstance () {
@@ -170,8 +171,22 @@ function allocateElastic () {
 function associateElastic () {
 	# param: allocation id, instance id
 	echo "Associating Elastic IP with public instance..."
-	local raw=$(aws ec2 associate-address --allocation-id "$allocationid" --instance-id "$pubinstance")
-	echo "Instance: $pubinstance associated with Elastic IP $elasticip"
+	# check if instance is in state 'running'
+	check=$(aws ec2 describe-instances --instance-id "$pubinstance" --output text | grep STATE | awk '{print $2}')
+	running="16"
+	assocdone=0
+	alldone=1
+	while [ "$assocdone" -eq "0" ]; do
+		if [[ "$check" -eq "$running" ]]; then
+			local raw=$(aws ec2 associate-address --allocation-id "$allocationid" --instance-id "$pubinstance")
+			assocdone=$alldone
+			echo "- Instance $pubinstance associated with Elastic IP $elasticip"
+		else
+			echo "- Instance $pubinstance is still pending (code $check), waiting..."
+			sleep 5
+			check=$(aws ec2 describe-instances --instance-id "$pubinstance" --output text | grep STATE | awk '{print $2}')
+		fi
+	done
 	# aws ec2 associate-address --allocation-id <allocation-id> --instance-id <instance-id>
 }
 
@@ -218,4 +233,5 @@ allocateElastic
 associateElastic
 
 ### DONE
+echo "DONE!"
 
