@@ -23,7 +23,9 @@ function createKeys () {
 	# param: name
 	keyname="$1"
 	echo "Creating keys..."
-	aws ec2 create-key-pair --key-name "$keyname"
+	local raw=$(aws ec2 create-key-pair --key-name "$keyname" --output text --query KeyMaterial)
+	echo "$raw" > "$keyname".pem
+	echo "Key created: ${keyname}.pem"
 	# aws ec2 create-key-pair --key-name <name>
 }
 
@@ -100,11 +102,14 @@ function createRoute () {
 function associateRoute () {
 	# params: route table id, [subnet id, igw id]
 	local rtid="$1"
-	local subid="$2"
+	#local subid="$2"
 	echo "Associating route with subnet..."
-	local raw=$(aws ec2 associate-route-table --route-table-id "$rtid" --subnet-id "$subid" --output text)
-	assocrouteid=$(echo $raw | awk '{print $2}')
-	echo "- Route Table $rtid associated with Subnet $subid"
+	local raw=$(aws ec2 associate-route-table --route-table-id "$rtid" --subnet-id "$pubsub" --output text)
+	assocrouteid=$(echo "$raw" | awk '{print $2}')
+	echo "- Route Table $rtid associated with Subnet $pubsub"
+	local raw=$(aws ec2 associate-route-table --route-table id "$rtid" --subnet-id "$privsub" --output text)
+	assocrouteid2=$(echo "$raw" | awk '{print $2}')
+	echo "- Route Table $rtid associated with Subnet $privsub"
 	# aws ec2 associate-route-table --route-table-id <route-table-id> [--subnet-id <subnet-id>] [--gateway-id <igw-id>]
 }
 
@@ -119,11 +124,11 @@ function getImage () {
 function createSG () {
 	echo "Creating security groups..:"
 	# public
-	local raw=$(aws ec2 create-security-group --group-name "Public SG" --description "SG for the public instances" --output text)
+	local raw=$(aws ec2 create-security-group --group-name "Public SG" --description "SG for the public instances" --vpc-id "$cvpc" --output text)
 	pubsg=$(echo $raw | awk '{print $1}')
 	echo "- Public Security Group: $pubsg"
 	# private
-	local raw=$(aws ec2 create-security-group --group-name "Private SG" --description "SG for the private instances" --output text)
+	local raw=$(aws ec2 create-security-group --group-name "Private SG" --description "SG for the private instances" --vpc-id "$cvpc" --output text)
 	privsg=$(echo $raw | awk '{print $1}')
 	echo "- Private Security Group: $privsg"
 }
@@ -165,7 +170,7 @@ function allocateElastic () {
 function associateElastic () {
 	# param: allocation id, instance id
 	echo "Associating Elastic IP with public instance..."
-	local raw=$(aws ec2 associate-address --alocation-id "$allocationid" --instance-id "$pubinstance")
+	local raw=$(aws ec2 associate-address --allocation-id "$allocationid" --instance-id "$pubinstance")
 	echo "Instance: $pubinstance associated with Elastic IP $elasticip"
 	# aws ec2 associate-address --allocation-id <allocation-id> --instance-id <instance-id>
 }
@@ -189,7 +194,7 @@ createRouteTable "$cvpc"
 # Create route
 createRoute "$routetable" "$igw"
 # Associate route with public subnet
-associateRoute "$routetable" "$pubsub"
+associateRoute "$routetable" #"$pubsub"
 
 ## Instances
 # Keys
